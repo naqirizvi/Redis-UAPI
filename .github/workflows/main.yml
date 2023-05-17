@@ -9,7 +9,23 @@ jobs:
     name: run pull
     runs-on: ubuntu-latest
     
+export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+locale-gen en_US.UTF-8
+dpkg-reconfigure locales
+    
     steps:
+    
+    - name: configure locales
+      # perl: warning: Setting locale failed.
+      # perl: warning: Please check that your locale settings:
+      run: |
+        export LANGUAGE=en_US.UTF-8
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+        locale-gen en_US.UTF-8
+        dpkg-reconfigure locales
     - name: install ssh keys
       # check this thread to understand why its needed:
       # https://stackoverflow.com/a/70447517

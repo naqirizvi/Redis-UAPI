@@ -9,11 +9,11 @@ jobs:
     name: run pull
     runs-on: ubuntu-latest
     steps:
-    - name: Install SSH Key via shimataro
-      uses: shimataro/ssh-key-action@v2
-      with:
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        name: shimataro
+    #- name: Install SSH Key via shimataro
+    #  uses: shimataro/ssh-key-action@v2
+    #  with:
+    #    key: ${{ secrets.SSH_PRIVATE_KEY }}
+    #    name: shimataro
     - name: Create SSH key manually
       # echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
       run: |

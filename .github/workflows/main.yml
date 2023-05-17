@@ -26,12 +26,22 @@ jobs:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         #SSH_KNOWN_HOSTS: ${{ secrets.SSH_HOST }}
         SSH_KEY_PATH: ${{ github.workspace }}/private.key
+    - name: Rsync Deployments Action
+      uses: Burnett01/rsync-deployments@5.2.1
+      with:
+        switches: -avzr
+        path: dist/
+        remote_path: ${{ secrets.WORK_DIR }}
+        remote_host: ${{ secrets.SSH_HOST }}
+        remote_user: ${{ secrets.SSH_USER }}
+        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: rsync over SSH
-      run: |
-        ls -alh
-        pwd
-        rsync -avz -e "ssh -i  ~/.ssh/private.key" ../dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}
+      
+    # - name: rsync over SSH
+    #   run: |
+    #     ls -alh
+    #     pwd
+    #     rsync -avz -e "ssh -i  ~/.ssh/private.key" ../dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}
 
     #- name: configure locales
     #  # perl: warning: Setting locale failed.

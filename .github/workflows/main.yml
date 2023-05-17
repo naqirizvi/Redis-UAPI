@@ -24,11 +24,11 @@ jobs:
       shell: bash
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SSH_KNOWN_HOSTS: ${{ secrets.SSH_HOST }}
+        #SSH_KNOWN_HOSTS: ${{ secrets.SSH_HOST }}
         SSH_KEY_PATH: ${{ github.workspace }}/../private.key
 
     - name: rsync over SSH
-      run: rsync -avz . ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}
+      run: rsync -avz -e "ssh -i  ~/.ssh/private.key" . ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WORK_DIR }}
 
     #- name: configure locales
     #  # perl: warning: Setting locale failed.

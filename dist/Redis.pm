@@ -59,10 +59,8 @@ sub install_ocp {
 my ( $args, $result ) = @_;
 mkdir($redis_root) unless(-d $redis_root);
 
-my $cc = `curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf -o $redis_root/redis.conf`
-print `$cc`;
-my $cc = `curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/start_redis.sh -o $redis_root/start_redis.sh`
-print `$cc`;
+my $cc = `curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf -o $redis_root/redis.conf`;
+my $cc = `curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/start_redis.sh -o $redis_root/start_redis.sh`;
         $result->metadata('metadata_var', '1');
         use Encode qw(encode);
         $result->data( encode( 'utf-8',$Cpanel::user ) );

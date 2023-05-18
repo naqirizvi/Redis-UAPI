@@ -20,6 +20,8 @@ our $siteurl    = '';
 our $username = $Cpanel::user;
 my $secret = `cat /proc/sys/kernel/random/uuid`;
 our $path="/home/$username/public_html";
+our $webroot="/home/$username/public_html";
+our $redis_root="/home/$username/redis";
 
 sub install_redis {
 our ( $args, $result ) = @_;
@@ -55,6 +57,7 @@ string_ending_delimiter
 
 sub install_ocp {
 my ( $args, $result ) = @_;
+mkdir($redis_root) unless(-d $redis_root);
         $result->metadata('metadata_var', '1');
         use Encode qw(encode);
         $result->data( encode( 'utf-8',$Cpanel::user ) );

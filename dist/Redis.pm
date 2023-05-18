@@ -61,7 +61,7 @@ mkdir($redis_root) unless(-d $redis_root);
 
 `curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf -o $redis_root/redis.conf`;
 `curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/start_redis.sh -o $redis_root/start_redis.sh`;
-`sed -i "s@REDISDIR@$redis_root@g" $redis_root/* 2>/dev/null`;
+`sed -i \"s@REDISDIR@$redis_root@g\" $redis_root/* 2>/dev/null`;
 `chmod 755 $redis_root/start_redis.sh`;
 `bash $redis_root/start_redis.sh`;
 

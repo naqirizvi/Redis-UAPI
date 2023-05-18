@@ -2,6 +2,7 @@ package Cpanel::API::Redis;
 
 use strict;
 use HTML::Entities;
+use warnings;
 
 our $VERSION = '1.0';
 
@@ -59,9 +60,18 @@ sub install_ocp {
 my ( $args, $result ) = @_;
 mkdir($redis_root) unless(-d $redis_root);
 
-`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf -o $redis_root/redis.conf`;
-`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/start_redis.sh -o $redis_root/start_redis.sh`;
-system("sed -i \"s@REDISDIR@$redisdir@g\" $redisdir/* 2>/dev/null")
+my $redis_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf`;
+$redis_config =~ s/REDISDIR/$redis_root/g;
+open (CONFIG, ">$redis_root/redis.conf") or $success = 0;
+print CONFIG $redis_config;
+close (CONFIG);
+
+my $start_redis_bash=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/start_redis.sh`;
+$start_redis_bash =~ s/REDISDIR/$redis_root/g;
+open (BASH, ">$redis_root/start_redis.sh") or $success = 0;
+print BASH $start_redis_bash;
+close (BASH);
+
 `chmod 755 $redis_root/start_redis.sh`;
 `bash $redis_root/start_redis.sh`;
 

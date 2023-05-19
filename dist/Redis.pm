@@ -75,49 +75,57 @@ close (BASH);
 `chmod 755 $redis_root/start_redis.sh`;
 `bash $redis_root/start_redis.sh`;
 
-#`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_CONFIG --path="$webroot 2>&1`;
-#`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_SCHEME --path="$webroot 2>&1`;
-#`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_PATH --path="$webroot 2>&1`;
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
 my $error   = substr $data, 0, 6;
 if($error eq 'Error:')
 {
-    $result->error( $data, $error );
-    return 0;
+    #$result->error( $data, $error );
+    #return 0;
 }
 else
 {
-    $result->data($data);
-    return 1;
+    #$result->data($data);
+    #return 1;
 }
 
 
-my $redis_wp_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/WP_REDIS_CONFIG`;
-$redis_wp_config =~ s/USERNAME/$username/g;
+    my $redis_wp_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/WP_REDIS_CONFIG`;
+    $redis_wp_config =~ s/USERNAME/$username/g;
 
-#$data =~ s/<?php/$redis_wp_config/g;
+    my $filename = "$webroot/wp-config.php";
 
-# File path to read and modify
-my $filename = "$webroot/wp-config.php";
+    my $search_string = '<?php';
+    my $replace_string = $redis_wp_config;
 
-# Search and replace strings
-my $search_string = '<?php';
-my $replace_string = $redis_wp_config;
+    open(my $file, '<', $filename) or die "Cannot open file '$filename': $!";
+    my $file_content = do { local $/; <$file> };
+    close($file);
 
-# Read the file content into a variable
-open(my $file, '<', $filename) or die "Cannot open file '$filename': $!";
-my $file_content = do { local $/; <$file> };
-close($file);
+    $file_content =~ s/\Q$search_string/$replace_string/;
 
-# Perform the search and replace operation
-$file_content =~ s/\Q$search_string/$replace_string/;
+    open($file, '>', $filename) or die "Cannot open file '$filename': $!";
+    print $file $file_content;
+    close($file);
 
-# Write the modified content back to the file
-open($file, '>', $filename) or die "Cannot open file '$filename': $!";
-print $file $file_content;
-close($file);
+my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin install https://rocketscripts.space/assets/object-cache-pro.zip --activate --path=$webroot 2>&1 );
+my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin update object-cache-pro --path=$webroot 2>&1 );
+my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
+
+
+my $command = "bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
+my $schedule = '*/5 * * * *';
+
+my $crontab = `crontab -l -u $username`;
+
+# Append the new cron job to the existing crontab
+$crontab .= "$schedule $command\n";
+
+# Update the crontab
+open(my $fh, "| crontab -u $username -") or die "Failed to update crontab: $!";
+print $fh $crontab;
+close($fh);
 
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);

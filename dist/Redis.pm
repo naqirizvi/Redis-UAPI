@@ -80,7 +80,7 @@ close (BASH);
 #`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_SCHEME --path="$webroot 2>&1`;
 #`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_PATH --path="$webroot 2>&1`;
 
-$data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG $params 2>&1);
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_CONFIG $params 2>&1");
 my $error   = substr $data, 0, 6;
 if($error eq 'Error:')
 {

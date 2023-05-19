@@ -78,6 +78,8 @@ close (BASH);
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin install https://rocketscripts.space/assets/object-cache-pro.zip --activate --path=$webroot 2>&1 );
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin update object-cache-pro --path=$webroot 2>&1 );
 my $error   = substr $data, 0, 6;
 if($error eq 'Error:')
 {
@@ -89,7 +91,6 @@ else
     #$result->data($data);
     #return 1;
 }
-
 
     my $redis_wp_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/WP_REDIS_CONFIG`;
     $redis_wp_config =~ s/USERNAME/$username/g;
@@ -109,10 +110,7 @@ else
     print $file $file_content;
     close($file);
 
-my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin install https://rocketscripts.space/assets/object-cache-pro.zip --activate --path=$webroot 2>&1 );
-my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin update object-cache-pro --path=$webroot 2>&1 );
 my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
-
 
 my $command = "bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
 my $schedule = '*/5 * * * *';

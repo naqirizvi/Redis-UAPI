@@ -58,6 +58,7 @@ string_ending_delimiter
 
 sub install_ocp {
 my ( $args, $result ) = @_;
+$params="--path=$webroot"
 mkdir($redis_root) unless(-d $redis_root);
 
 my $redis_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf`;
@@ -74,6 +75,23 @@ close (BASH);
 
 `chmod 755 $redis_root/start_redis.sh`;
 `bash $redis_root/start_redis.sh`;
+#
+#`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_CONFIG --path="$webroot 2>&1`;
+#`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_SCHEME --path="$webroot 2>&1`;
+#`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_PATH --path="$webroot 2>&1`;
+
+$data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG $params 2>&1);
+my $error   = substr $data, 0, 6;
+if($error eq 'Error:')
+{
+    $result->error( $data, $error );
+    return 0;
+}
+else
+{
+    $result->data($data);
+    return 1;
+}
 
         $result->metadata('metadata_var', '1');
         use Encode qw(encode);

@@ -97,8 +97,6 @@ else
 my $redis_wp_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/WP_REDIS_CONFIG`;
 $redis_wp_config =~ s/USERNAME/$username/g;
 
-my $filename = "$webroot/wp-config.php";
- 
 #$data =~ s/<?php/$redis_wp_config/g;
 
 # File path to read and modify
@@ -124,7 +122,7 @@ close($file);
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);
     $result->data( encode( 'utf-8',$Cpanel::user ) );
-    $result->message("Redis Installed $path First occurrence of '$search_string' has been replaced with '$replace_string' in '$filename'.\n");
+    $result->message("Redis Installed $path First occurrence of $search_string has been replaced with $replace_string in $filename.\n");
     return 1;
 }
 

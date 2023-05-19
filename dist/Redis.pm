@@ -115,13 +115,13 @@ my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force 
 my $command = "bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
 my $schedule = '*/5 * * * *';
 
-my $crontab = `crontab -l -u $username`;
+my $crontab = `crontab -l`;
 
 # Append the new cron job to the existing crontab
 $crontab .= "$schedule $command\n";
 
 # Update the crontab
-open(my $fh, "| crontab -u $username -") or die "Failed to update crontab: $!";
+open(my $fh, "| crontab -") or die "Failed to update crontab: $!";
 print $fh $crontab;
 close($fh);
 

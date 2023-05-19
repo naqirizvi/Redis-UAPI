@@ -78,9 +78,9 @@ close (BASH);
 #`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_CONFIG --path="$webroot 2>&1`;
 #`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_SCHEME --path="$webroot 2>&1`;
 #`/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_PATH --path="$webroot 2>&1`;
-
-$data = qx("/usr/local/cpanel/share/WordPressManager/wp" config set WP_REDIS_CONFIG "$value" --path=$webroot 2>&1 );
-#my $data = qx("/usr/local/cpanel/share/WordPressManager/wp config delete WP_REDIS_CONFIG --path=$webroot");
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
 my $error   = substr $data, 0, 6;
 if($error eq 'Error:')
 {
@@ -93,11 +93,39 @@ else
     return 1;
 }
 
-        $result->metadata('metadata_var', '1');
-        use Encode qw(encode);
-        $result->data( encode( 'utf-8',$Cpanel::user ) );
-        $result->message("Redis Installed $path $secret");
-        return 1;
+
+my $redis_wp_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/WP_REDIS_CONFIG`;
+$redis_wp_config =~ s/USERNAME/$username/g;
+
+my $filename = "$webroot/wp-config.php";
+ 
+#$data =~ s/<?php/$redis_wp_config/g;
+
+# File path to read and modify
+my $filename = "$webroot/wp-config.php";
+
+# Search and replace strings
+my $search_string = '<?php';
+my $replace_string = $redis_wp_config;
+
+# Read the file content into a variable
+open(my $file, '<', $filename) or die "Cannot open file '$filename': $!";
+my $file_content = do { local $/; <$file> };
+close($file);
+
+# Perform the search and replace operation
+$file_content =~ s/\Q$search_string/$replace_string/;
+
+# Write the modified content back to the file
+open($file, '>', $filename) or die "Cannot open file '$filename': $!";
+print $file $file_content;
+close($file);
+
+    $result->metadata('metadata_var', '1');
+    use Encode qw(encode);
+    $result->data( encode( 'utf-8',$Cpanel::user ) );
+    $result->message("Redis Installed $path First occurrence of '$search_string' has been replaced with '$replace_string' in '$filename'.\n");
+    return 1;
 }
 
 1;

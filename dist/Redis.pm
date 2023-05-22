@@ -121,51 +121,52 @@ my $crontab = `crontab -l`;
 $crontab .= "$schedule $command\n";
 
 # Update the crontab
-#open(my $fh, "| crontab -") or die "Failed to update crontab: $!";
-#print $fh $crontab;
-#close($fh);
-
-my $cron_file = '/var/spool/cron/' . $username;
-my $cron_job = "*/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
-
-# Read the existing cron file
-open(my $fh, '<', $cron_file) or die "Failed to open $cron_file: $!";
-my @cron_lines = <$fh>;
+open(my $fh, "| crontab -") or die "Failed to update crontab: $!";
+print $fh $crontab;
 close($fh);
 
-# Find and modify the cron job
-my $modified = 0;
-foreach my $line (@cron_lines) {
-    if ($line =~ /^\* \* \* \* \* \/path\/to\/command/) {
-        $line = $cron_job . "\n";
-        $modified = 1;
-        last;
-    }
-}
-
-# Append the modified cron job if it doesn't exist
-if (!$modified) {
-    push @cron_lines, $cron_job . "\n";
-}
-
-# Write the updated cron file
-open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
-print $fh @cron_lines;
-close($fh);
-
-
-my $cron_file = '/etc/crontab';
-my $cron_job = '/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1';
-#
-#open(my $fh, '<', $cron_file) or die "Failed to open $cron_file: $!";
-#my @cron_lines = <$fh>;
-#close($fh);
-
-push @cron_lines, $cron_job . "\n";
-
-open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
-print $fh @cron_lines;
-close($fh);
+##
+##my $cron_file = '/var/spool/cron/' . $username;
+##my $cron_job = "*/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
+##
+### Read the existing cron file
+##open(my $fh, '<', $cron_file) or die "Failed to open $cron_file: $!";
+##my @cron_lines = <$fh>;
+##close($fh);
+##
+### Find and modify the cron job
+##my $modified = 0;
+##foreach my $line (@cron_lines) {
+##    if ($line =~ /^\* \* \* \* \* \/path\/to\/command/) {
+##        $line = $cron_job . "\n";
+##        $modified = 1;
+##        last;
+##    }
+##}
+##
+### Append the modified cron job if it doesn't exist
+##if (!$modified) {
+##    push @cron_lines, $cron_job . "\n";
+##}
+##
+### Write the updated cron file
+##open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
+##print $fh @cron_lines;
+##close($fh);
+##
+##
+##my $cron_file = '/etc/crontab';
+##my $cron_job = '/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1';
+###
+###open(my $fh, '<', $cron_file) or die "Failed to open $cron_file: $!";
+###my @cron_lines = <$fh>;
+###close($fh);
+##
+##push @cron_lines, $cron_job . "\n";
+##
+##open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
+##print $fh @cron_lines;
+##close($fh);
 
 
 

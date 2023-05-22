@@ -3,6 +3,7 @@ package Cpanel::API::Redis;
 use strict;
 use HTML::Entities;
 use warnings;
+use IPC::System::Simple qw(capture);
 
 our $VERSION = '1.0';
 
@@ -13,6 +14,7 @@ use Cpanel                   ();
 use Cpanel::API              ();
 use Cpanel::Locale           ();
 use Cpanel::Logger           ();
+
 
 my $logger;
 my $locale;
@@ -121,9 +123,20 @@ my $crontab = `crontab -l`;
 $crontab .= "$schedule $command\n";
 
 # Update the crontab
-open(my $fh, "| crontab -") or die "Failed to update crontab: $!";
-print $fh $crontab;
-close($fh);
+#open(my $fh, "| crontab -") or die "Failed to update crontab: $!";
+#print $fh $crontab;
+#close($fh);
+
+
+# Prepare the new cron job
+my $new_cron = `crontab -l`;
+$new_cron .= $command . "\n";
+
+# Install the new cron job
+capture("echo \"$new_cron\" | crontab -");
+
+print "Cron job installed successfully.\n";
+
 
 ##
 ##my $cron_file = '/var/spool/cron/' . $username;

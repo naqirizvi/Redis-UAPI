@@ -113,30 +113,12 @@ else
     close($file);
 
 my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
-
 my $command = "bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
-my $schedule = '*/5 * * * *';
-
-my $crontab = `crontab -l`;
 
 # Append the new cron job to the existing crontab
-$crontab .= "$schedule $command\n";
-
-# Update the crontab
-#open(my $fh, "| crontab -") or die "Failed to update crontab: $!";
-#print $fh $crontab;
-#close($fh);
-
-
-# Prepare the new cron job
-my $new_cron = `crontab -l`;
-$new_cron .= $command . "\n";
-
-# Install the new cron job
-capture("echo \"$new_cron\" | crontab -");
-
-print "Cron job installed successfully.\n";
-
+my $schedule = '*/5 * * * *';
+my @crontab = `crontab -l`;
+#$crontab .= "$schedule $command\n";
 
 ##
 ##my $cron_file = '/var/spool/cron/' . $username;
@@ -148,19 +130,23 @@ print "Cron job installed successfully.\n";
 ##close($fh);
 ##
 ### Find and modify the cron job
-##my $modified = 0;
-##foreach my $line (@cron_lines) {
-##    if ($line =~ /^\* \* \* \* \* \/path\/to\/command/) {
-##        $line = $cron_job . "\n";
-##        $modified = 1;
-##        last;
-##    }
-##}
+ my $modified = 0;
+foreach my $line (@crontab) {
+    if ($line =~ /^\* \* \* \* \* \/path\/to\/command/) {
+        $line = $schedule . $command . "\n";
+        $modified = 1;
+        last;
+    }
+}
 ##
 ### Append the modified cron job if it doesn't exist
-##if (!$modified) {
-##    push @cron_lines, $cron_job . "\n";
-##}
+if (!$modified) {
+    push @crontab, $schedule . $command . "\n";
+}
+
+
+capture("echo \"@crontab\" | crontab -");
+
 ##
 ### Write the updated cron file
 ##open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";

@@ -116,8 +116,9 @@ my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force 
 my $command = "bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
 
 # Append the new cron job to the existing crontab
-my $schedule = '*/5 * * * *';
-my $crontab = `crontab -l`;
+my $schedule='*/5 * * * *';
+my @crontab=capture('crontab -l');
+
 #$crontab .= "$schedule $command\n";
 
 ##
@@ -131,8 +132,8 @@ my $crontab = `crontab -l`;
 ##
 ### Find and modify the cron job
  my $modified = 0;
-foreach my $line ($crontab) {
-    if ($line =~ /^"\*\/5 \* \* \* \* bash \/home\/$username\/redis\/start_redis.sh >\/dev\/null 2>&1"/) {
+foreach my $line (@crontab) {
+    if ($line =~ /^\$schedule $command/) {
         $line = "$schedule $command\n";
         $modified = 1;
         last;
@@ -140,12 +141,11 @@ foreach my $line ($crontab) {
 }
 ##
 ### Append the modified cron job if it doesn't exist
+### Append the modified cron job if it doesn't exist
 if (!$modified) {
-    push $crontab, "$schedule $command\n";
+    push @crontab,"$schedule $command\n";
+    capture("echo \"@crontab\" | crontab -");
 }
-
-
-capture("echo \"$crontab\" | crontab -");
 
 ##
 ### Write the updated cron file
@@ -166,7 +166,6 @@ capture("echo \"$crontab\" | crontab -");
 ##open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
 ##print $fh @cron_lines;
 ##close($fh);
-
 
 
     $result->metadata('metadata_var', '1');

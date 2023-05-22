@@ -113,38 +113,25 @@ else
     close($file);
 
 my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
-my $command = "bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
 
-# Append the new cron job to the existing crontab
-my $schedule='*/5 * * * *';
-my @crontab=capture('crontab -l');
+my $redis_cron = "* * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
+my $cron_status;
+# Get the existing crontab
+my $existing_crontab = capture('crontab -l');
 
-#$crontab .= "$schedule $command\n";
+# Check if the cron job already exists
+my $cron_exists = $existing_crontab =~ /^\$redis_cron/m;
 
-##
-##my $cron_file = '/var/spool/cron/' . $username;
-##my $cron_job = "*/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
-##
-### Read the existing cron file
-##open(my $fh, '<', $cron_file) or die "Failed to open $cron_file: $!";
-##my @cron_lines = <$fh>;
-##close($fh);
-##
-### Find and modify the cron job
- my $modified = 0;
-foreach my $line (@crontab) {
-    if ($line =~ /^\$schedule $command/) {
-        $line = "$schedule $command\n";
-        $modified = 1;
-        last;
-    }
-}
-##
-### Append the modified cron job if it doesn't exist
-### Append the modified cron job if it doesn't exist
-if (!$modified) {
-    push @crontab,"$schedule $command\n";
-    capture("echo \"@crontab\" | crontab -");
+if ($cron_exists) {
+    $cron_status = "Cron job already exists for user $user.\n";
+} else {
+    # Append the new cron job to the existing crontab
+    my $new_crontab = $existing_crontab . "\n" . $cron_job . "\n";
+    
+    # Install the modified crontab
+    capture("echo \"$new_crontab\" | crontab -u $user -");
+
+    $cron_status = "Cron job added successfully for user $user.\n";
 }
 
 ##
@@ -171,7 +158,7 @@ if (!$modified) {
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);
     $result->data( encode( 'utf-8',$Cpanel::user ) );
-    $result->message("Redis Installed $path First occurrence of $search_string has been replaced with $replace_string in $filename.\n");
+    $result->message("Redis Installed $path First occurrence of $search_string has been replaced with $replace_string in $filename.$cron_status\n");
     return 1;
 }
 

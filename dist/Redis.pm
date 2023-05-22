@@ -72,7 +72,7 @@ open (BASH, ">$redis_root/start_redis.sh") or $success = 0;
 print BASH $start_redis_bash;
 close (BASH);
 
-`chmod 755 $redis_root/start_redis.sh`;1
+`chmod 755 $redis_root/start_redis.sh`;
 `bash $redis_root/start_redis.sh`;
 
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );

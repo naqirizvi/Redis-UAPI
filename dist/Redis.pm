@@ -123,15 +123,15 @@ my $existing_crontab = capture('crontab -l');
 my $cron_exists = $existing_crontab =~ /^\$redis_cron/m;
 
 if ($cron_exists) {
-    $cron_status = "Cron job already exists for user $user.\n";
+    $cron_status = "Cron job already exists for user $username.\n";
 } else {
     # Append the new cron job to the existing crontab
     my $new_crontab = $existing_crontab . "\n" . $cron_job . "\n";
     
     # Install the modified crontab
-    capture("echo \"$new_crontab\" | crontab -u $user -");
+    capture("echo \"$new_crontab\" | crontab -u $username -");
 
-    $cron_status = "Cron job added successfully for user $user.\n";
+    $cron_status = "Cron job added successfully for user $username.\n";
 }
 
 ##

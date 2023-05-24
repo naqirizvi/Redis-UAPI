@@ -4,6 +4,7 @@ use strict;
 use HTML::Entities;
 use warnings;
 use IPC::System::Simple qw(capture);
+use File::Path qw(remove_tree);
 
 our $VERSION = '1.0';
 
@@ -25,6 +26,9 @@ my $secret = `cat /proc/sys/kernel/random/uuid`;
 our $path="/home/$username/public_html";
 our $webroot="/home/$username/public_html";
 our $redis_root="/home/$username/redis";
+my $file_del_status;
+my $dir_del_status;
+my $OCP_file = "$webroot/wp-content/object-cache.php";
 
 sub install_redis {
 our ( $args, $result ) = @_;
@@ -56,6 +60,37 @@ string_ending_delimiter
         $result->error('Unable to Install Redis');
         return 0;
     }
+}
+
+
+sub delete_ocp {
+# Use unlink function to delete the file
+if (unlink $OCP_file) {
+    $file_del_status="File deleted successfully.\n";
+} else {
+    $file_del_status="Failed to delete file: $!";
+}
+
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
+my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
+
+eval {
+    remove_tree($redis_root);
+};
+if ($@) {
+    $del_status="Failed to delete directory: $@";
+} else {
+    $del_status="Directory deleted successfully.\n";
+}
+
+
+    $result->metadata('metadata_var', '1');
+    use Encode qw(encode);
+    $result->data( encode( 'utf-8',$Cpanel::user ) );
+    $result->message("Redis deleted: $file_del_status, $del_status\n");
+    return 1;
+
 }
 
 sub install_ocp {
@@ -114,48 +149,21 @@ else
 
 my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
 
-my $redis_cron = "* * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
-my $cronjob_command='start_redis.sh'
+my $redis_cron = "*/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
 my $cron_status;
 # Get the existing crontab
 my $existing_crontab = capture('crontab -l');
-
 # Check if the cron job already exists
-#my $cron_exists = $existing_crontab =~ /^$redis_cron/m;
-my $cron_exists = $existing_crontab =~ m/$cronjob_command/;
-
+my $cron_exists = $existing_crontab =~ m/start_redis.sh/;
 if ($cron_exists) {
     $cron_status = "Cron job already exists for user $username.\n";
 } else {
     # Append the new cron job to the existing crontab
     my $new_crontab = $existing_crontab . "\n" . $redis_cron . "\n";
-    
     # Install the modified crontab
     capture("echo \"$new_crontab\" | crontab -");
-
     $cron_status = "Cron job added successfully for user $username.\n";
 }
-
-##
-### Write the updated cron file
-##open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
-##print $fh @cron_lines;
-##close($fh);
-##
-##
-##my $cron_file = '/etc/crontab';
-##my $cron_job = '/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1';
-###
-###open(my $fh, '<', $cron_file) or die "Failed to open $cron_file: $!";
-###my @cron_lines = <$fh>;
-###close($fh);
-##
-##push @cron_lines, $cron_job . "\n";
-##
-##open($fh, '>', $cron_file) or die "Failed to open $cron_file for writing: $!";
-##print $fh @cron_lines;
-##close($fh);
-
 
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);

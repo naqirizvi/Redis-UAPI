@@ -26,9 +26,14 @@ my $secret = `cat /proc/sys/kernel/random/uuid`;
 our $path="/home/$username/public_html";
 our $webroot="/home/$username/public_html";
 our $redis_root="/home/$username/redis";
+
 my $file_del_status;
 my $dir_del_status;
-my $OCP_file = "$webroot/wp-content/object-cache.php";
+my $wp_content = "$webroot/wp-content";
+my $OCP_file = "$wp_content/object-cache.php";
+my $OCP_plugin = "$wp_content/plugins/object-cache-pro";
+
+
 
 sub install_redis {
 our ( $args, $result ) = @_;
@@ -79,16 +84,25 @@ eval {
     remove_tree($redis_root);
 };
 if ($@) {
-    $del_status="Failed to delete directory: $@";
+    $dir_del_status="Failed to delete Redis directory: $@";
 } else {
-    $del_status="Directory deleted successfully.\n";
+    $dir_del_status="Redis Directory deleted successfully.\n";
 }
 
+eval {
+    remove_tree($OCP_plugin);
+};
+if ($@) {
+    $dir_del_status="Failed to delete OCP directory: $@";
+} else {
+    $dir_del_status="OCP Directory deleted successfully.\n";
+}
 
+    my ( $args, $result ) = @_;
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);
     $result->data( encode( 'utf-8',$Cpanel::user ) );
-    $result->message("Redis deleted: $file_del_status, $del_status\n");
+    $result->message("Redis deleted: $file_del_status, $dir_del_status\n");
     return 1;
 
 }
@@ -112,9 +126,6 @@ close (BASH);
 `chmod 755 $redis_root/start_redis.sh`;
 `bash $redis_root/start_redis.sh`;
 
-my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
-my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
-my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin install https://rocketscripts.space/assets/object-cache-pro.zip --activate --path=$webroot 2>&1 );
 my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin update object-cache-pro --path=$webroot 2>&1 );
 my $error   = substr $data, 0, 6;

@@ -33,8 +33,6 @@ my $wp_content = "$webroot/wp-content";
 my $OCP_file = "$wp_content/object-cache.php";
 my $OCP_plugin = "$wp_content/plugins/object-cache-pro";
 
-
-
 sub install_redis {
 our ( $args, $result ) = @_;
 my ( $domain, $user ) = encode_entities($args->get( 'domain', 'user' ));
@@ -183,4 +181,23 @@ if ($cron_exists) {
     return 1;
 }
 
+sub delete_cron{
+
+# Specify the cron job command to delete
+my $cronjob_command = 'start_redis.sh';
+
+# Execute the crontab command and capture the output
+my $output = capture('crontab -l');
+
+# Check if the cron job command exists in the output
+if ($output =~ m/$cronjob_command/) {
+        # Remove the cron job command from the output
+        $output =~ s/$cronjob_command//;
+        # Update the crontab with the modified output
+        capture("echo \"$output\" | crontab -");
+        print "The cron job has been deleted.\n";
+    } else {
+        print "The cron job does not exist.\n";
+    }
+}
 1;

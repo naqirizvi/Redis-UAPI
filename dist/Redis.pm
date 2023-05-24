@@ -115,12 +115,14 @@ else
 my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
 
 my $redis_cron = "* * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
+my $cronjob_command='start_redis.sh'
 my $cron_status;
 # Get the existing crontab
 my $existing_crontab = capture('crontab -l');
 
 # Check if the cron job already exists
-my $cron_exists = $existing_crontab =~ /^$redis_cron/m;
+#my $cron_exists = $existing_crontab =~ /^$redis_cron/m;
+my $cron_exists = $existing_crontab =~ m/$cronjob_command/;
 
 if ($cron_exists) {
     $cron_status = "Cron job already exists for user $username.\n";

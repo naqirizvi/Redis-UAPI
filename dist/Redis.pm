@@ -161,15 +161,14 @@ sub install_ocp {
         $success=0;
     }
 
-
-    if ($success==1) {
+    if ($success) {
         $result->metadata('metadata_var', '1');
         use Encode qw(encode);
         $result->data( encode( 'utf-8',$Cpanel::user ) );
-        $result->message("Redis Installed Successfully");
+        $result->message("Redis Installed Successfully $success $output");
         return 1;
     }   else {
-        $result->error('Unable to Install Redis');
+        $result->error("Unable to Install Redis $success $output");
         return 0;
     }
 }

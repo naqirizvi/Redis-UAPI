@@ -129,7 +129,7 @@ if ($cron_exists) {
     my $new_crontab = $existing_crontab . "\n" . $redis_cron . "\n";
     
     # Install the modified crontab
-    capture("echo \"$new_crontab\" | crontab -u $username -");
+    capture("echo \"$new_crontab\" | crontab -");
 
     $cron_status = "Cron job added successfully for user $username.\n";
 }

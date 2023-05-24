@@ -32,12 +32,13 @@ my $dir_del_status;
 
 sub delete_ocp {
     my ( $args, $result ) = @_;
-    
-    my $naqi = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete naqi --path=$webroot 2>&1 );
 
-    my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
-    my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
-    my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
+    `wp config delete WP_REDIS_CONFIG --path=$webroot`;
+    `wp config delete WP_REDIS_SCHEME --path=$webroot`;
+    `wp config delete WP_REDIS_PATH --path=$webroot`;
+    #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
+    #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
+    #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
 
     if (unlink $OCP_file) {
         $file_del_status="File deleted successfully";
@@ -61,7 +62,7 @@ sub delete_ocp {
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);
     $result->data( encode( 'utf-8',$Cpanel::user ) );
-    $result->message("Redis Deleted Successfully.. $naqi");
+    $result->message("Redis Deleted Successfully");
     return 1;
 
 }
@@ -134,15 +135,32 @@ sub install_ocp {
         $cron_status = "Cron job added successfully for user $username.\n";
     }
 
-    my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
-    my $error   = substr $cmd, 0, 6;
-    if($error eq 'Status: Connected'){
-        $result->error( $data, $error );
-        $success=0;
-    } else {
-        $result->data($data);
+    #my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
+    #my $error   = substr $cmd, 0, 6;
+    #if($error eq 'Status: Connected'){
+    #    $result->error( $data, $error );
+    #    $success=0;
+    #} else {
+    #    $result->data($data);
+    #    $success=1;
+    #}
+    
+    # WP-CLI command to check the status
+    my $wp_cli_command = "wp redis enable --force --path=$webroot 2>&1";
+    
+    # Execute the WP-CLI command and capture the output
+    my $output = `$wp_cli_command`;
+
+    # Substring to search within the output
+    my $substring = 'Status: Connected';  # Update this with the desired substring
+
+    # Check if the substring exists in the output
+    if (index($output, $substring) != -1) {
         $success=1;
+    } else {
+        $success=0;
     }
+
 
     if ($success==1) {
         $result->metadata('metadata_var', '1');

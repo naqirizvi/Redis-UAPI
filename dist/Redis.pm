@@ -118,19 +118,6 @@ sub install_ocp {
     print $file $file_content;
     close($file);
 
-    my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
-    my $error   = substr $cmd, 0, 6;
-    if($error eq 'Status: Connected')
-    {
-        $result->error( $data, $error );
-        $success=0;
-    }
-    else
-    {
-        $result->data($data);
-        $success=1;
-    }
-
     my $redis_cron = "*/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
     my $cron_status;
     # Get the existing crontab
@@ -147,8 +134,17 @@ sub install_ocp {
         $cron_status = "Cron job added successfully for user $username.\n";
     }
 
+    my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
+    my $error   = substr $cmd, 0, 6;
+    if($error eq 'Status: Connected'){
+        $result->error( $data, $error );
+        $success=0;
+    } else {
+        $result->data($data);
+        $success=1;
+    }
 
-    if ($success) {
+    if ($success==1) {
         $result->metadata('metadata_var', '1');
         use Encode qw(encode);
         $result->data( encode( 'utf-8',$Cpanel::user ) );

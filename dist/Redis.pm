@@ -33,9 +33,9 @@ my $dir_del_status;
 sub delete_ocp {
     my ( $args, $result ) = @_;
 
-    `wp config delete WP_REDIS_CONFIG --path=$webroot`;
-    `wp config delete WP_REDIS_SCHEME --path=$webroot`;
-    `wp config delete WP_REDIS_PATH --path=$webroot`;
+    `wp config delete WP_REDIS_CONFIG --path=$webroot >/dev/null 2>&1`;
+    `wp config delete WP_REDIS_SCHEME --path=$webroot >/dev/null 2>&1`;
+    `wp config delete WP_REDIS_PATH --path=$webroot >/dev/null 2>&1`;
     #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
     #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
     #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );

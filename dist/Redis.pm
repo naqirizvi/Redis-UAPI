@@ -152,7 +152,7 @@ sub install_ocp {
     my $output = `$wp_cli_command`;
 
     # Substring to search within the output
-    my $substring = 'Status: Connected';  # Update this with the desired substring
+    my $substring = 'Success:';  # Update this with the desired substring
 
     # Check if the substring exists in the output
     if (index($output, $substring) != -1) {
@@ -165,10 +165,10 @@ sub install_ocp {
         $result->metadata('metadata_var', '1');
         use Encode qw(encode);
         $result->data( encode( 'utf-8',$Cpanel::user ) );
-        $result->message("Redis Installed Successfully $success $output");
+        $result->message("Redis Installed Successfully");
         return 1;
     }   else {
-        $result->error("Unable to Install Redis $success $output");
+        $result->error("Unable to Install Redis");
         return 0;
     }
 }

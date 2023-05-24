@@ -36,9 +36,6 @@ sub delete_ocp {
     `wp config delete WP_REDIS_CONFIG --path=$webroot`;
     `wp config delete WP_REDIS_SCHEME --path=$webroot`;
     `wp config delete WP_REDIS_PATH --path=$webroot`;
-    #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
-    #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
-    #my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
 
     if (unlink $OCP_file) {
         $file_del_status="File deleted successfully";
@@ -89,17 +86,6 @@ sub install_ocp {
 
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin install https://rocketscripts.space/assets/object-cache-pro.zip --activate --path=$webroot 2>&1 );
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" plugin update object-cache-pro --path=$webroot 2>&1 );
-    my $error   = substr $data, 0, 6;
-    if($error eq 'Error:')
-    {
-        #$result->error( $data, $error );
-        #return 0;
-    }
-    else
-    {
-        #$result->data($data);
-        #return 1;
-    }
 
     my $redis_wp_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/WP_REDIS_CONFIG`;
     $redis_wp_config =~ s/USERNAME/$username/g;
@@ -121,40 +107,20 @@ sub install_ocp {
 
     my $redis_cron = "*/5 * * * * bash /home/$username/redis/start_redis.sh >/dev/null 2>&1";
     my $cron_status;
-    # Get the existing crontab
     my $existing_crontab = capture('crontab -l');
-    # Check if the cron job already exists
     my $cron_exists = $existing_crontab =~ m/start_redis.sh/;
     if ($cron_exists) {
         $cron_status = "Cron job already exists for user $username.\n";
     } else {
-        # Append the new cron job to the existing crontab
         my $new_crontab = $existing_crontab . "\n" . $redis_cron . "\n";
-        # Install the modified crontab
         capture("echo \"$new_crontab\" | crontab -");
         $cron_status = "Cron job added successfully for user $username.\n";
     }
 
-    #my $cmd = qx("/usr/local/cpanel/share/WordPressManager/wp" redis enable --force --path=$webroot 2>&1 );
-    #my $error   = substr $cmd, 0, 6;
-    #if($error eq 'Status: Connected'){
-    #    $result->error( $data, $error );
-    #    $success=0;
-    #} else {
-    #    $result->data($data);
-    #    $success=1;
-    #}
-    
-    # WP-CLI command to check the status
     my $wp_cli_command = "wp redis enable --force --path=$webroot 2>&1";
-    
-    # Execute the WP-CLI command and capture the output
     my $output = `$wp_cli_command`;
+    my $substring = 'Success:';
 
-    # Substring to search within the output
-    my $substring = 'Success:';  # Update this with the desired substring
-
-    # Check if the substring exists in the output
     if (index($output, $substring) != -1) {
         $success=1;
     } else {
@@ -176,11 +142,8 @@ sub install_ocp {
 sub delete_cron{
     my $cronjob = 'start_redis.sh';
     my $crontab = capture('crontab -l');
-    # Check if the cron job command exists in the output
-    if ($crontab =~ m/$cronjob/) {        
-    # Remove the entire line containing the cron job command from the output
+    if ($crontab =~ m/$cronjob/) {        WP_REDIS_CONFIG
     $crontab =~ s/.*$cronjob.*\n//;
-    # Update the crontab with the modified output
     capture("echo \"$crontab\" | crontab -");
     } 
 }

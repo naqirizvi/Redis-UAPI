@@ -24,7 +24,6 @@ our $success = 1;
 our $siteurl    = '';
 
 our ( $args, $result ) = @_;
-our ( $domain, $user ) = encode_entities($args->get( 'domain', 'user' ));
 our $username = $Cpanel::user;
 our $path="/home/$username/public_html";
 our $webroot="/home/$username/public_html";
@@ -37,6 +36,7 @@ my $OCP_file = "$wp_content/object-cache.php";
 my $OCP_plugin = "$wp_content/plugins/object-cache-pro";
 
 sub delete_ocp {
+    my ( $domain, $user ) = encode_entities($args->get( 'domain', 'user' ));
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
@@ -70,6 +70,7 @@ sub delete_ocp {
 
 
 sub install_ocp {
+    my ( $domain, $user ) = encode_entities($args->get( 'domain', 'user' ));
     mkdir($redis_root) unless(-d $redis_root);
 
     my $redis_config=`curl -s https://raw.githubusercontent.com/naqirizvi/rocket/main/redis.conf`;

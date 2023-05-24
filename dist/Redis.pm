@@ -16,32 +16,31 @@ use Cpanel::API              ();
 use Cpanel::Locale           ();
 use Cpanel::Logger           ();
 
-
 my $logger;
 my $locale;
 
-our $success = 1;
-our $siteurl    = '';
-
-our $username = $Cpanel::user;
-our $path="/home/$username/public_html";
-our $webroot="/home/$username/public_html";
-our $redis_root="/home/$username/redis";
-
+my $username    = $Cpanel::user;
+my $home        = "/home/$username";
+my $webroot     = "$home/public_html";
+my $redis_root  = "$home/redis";
+my $wp_content  = "$webroot/wp-content";
+my $OCP_file    = "$wp_content/object-cache.php";
+my $OCP_plugin  = "$wp_content/plugins/object-cache-pro";
+my $success     = 1;
 my $file_del_status;
 my $dir_del_status;
-my $wp_content = "$webroot/wp-content";
-my $OCP_file = "$wp_content/object-cache.php";
-my $OCP_plugin = "$wp_content/plugins/object-cache-pro";
 
 sub delete_ocp {
     my ( $args, $result ) = @_;
+    
+    my $naqi = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete naqi --path=$webroot 2>&1 );
+
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_CONFIG --path=$webroot 2>&1 );
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_SCHEME --path=$webroot 2>&1 );
     my $data = qx("/usr/local/cpanel/share/WordPressManager/wp" config delete WP_REDIS_PATH --path=$webroot 2>&1 );
 
     if (unlink $OCP_file) {
-        $file_del_status="File deleted successfully.\n";
+        $file_del_status="File deleted successfully";
     } else {
         $file_del_status="Failed to delete file: $!";
     }
@@ -54,7 +53,7 @@ sub delete_ocp {
     if ($@) {
         $dir_del_status="Failed to delete Redis directory: $@";
     } else {
-        $dir_del_status="Redis Directory deleted successfully.\n";
+        $dir_del_status="Redis Directory deleted successfully";
     }
 
     delete_cron();
@@ -62,7 +61,7 @@ sub delete_ocp {
     $result->metadata('metadata_var', '1');
     use Encode qw(encode);
     $result->data( encode( 'utf-8',$Cpanel::user ) );
-    $result->message("Redis Deleted Successfully\n");
+    $result->message("Redis Deleted Successfully.. $naqi");
     return 1;
 
 }

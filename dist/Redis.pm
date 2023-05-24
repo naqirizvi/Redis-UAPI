@@ -142,7 +142,7 @@ sub install_ocp {
 sub delete_cron{
     my $cronjob = 'start_redis.sh';
     my $crontab = capture('crontab -l');
-    if ($crontab =~ m/$cronjob/) {        WP_REDIS_CONFIG
+    if ($crontab =~ m/$cronjob/) {
     $crontab =~ s/.*$cronjob.*\n//;
     capture("echo \"$crontab\" | crontab -");
     } 

@@ -182,22 +182,11 @@ if ($cron_exists) {
 }
 
 sub delete_cron{
-
-# Specify the cron job command to delete
-my $cronjob_command = 'start_redis.sh';
-
-# Execute the crontab command and capture the output
-my $output = capture('crontab -l');
-
-# Check if the cron job command exists in the output
-if ($output =~ m/$cronjob_command/) {
-        # Remove the cron job command from the output
-        $output =~ s/$cronjob_command//;
-        # Update the crontab with the modified output
-        capture("echo \"$output\" | crontab -");
-        print "The cron job has been deleted.\n";
-    } else {
-        print "The cron job does not exist.\n";
-    }
+my $cronjob = 'start_redis.sh';
+my $crontab = capture('crontab -l');
+if ($crontab =~ m/$cronjob/) {        
+    $crontab =~ s/.*$cronjob.*\n//;
+    capture("echo \"$crontab\" | crontab -");
+    } 
 }
 1;
